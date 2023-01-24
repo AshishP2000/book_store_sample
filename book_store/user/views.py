@@ -27,3 +27,32 @@ def register(request):
         return JsonResponse({'message': 'Method not allowed'})
     except Exception as ex:
         logging.exception(ex)
+
+
+def show(request):
+    try:
+        if request.method == 'GET':
+            print("d")
+            data = Registration.objects.all().values()
+            user_list = list(data)
+            print(user_list)
+            return JsonResponse({'data': user_list})
+        return JsonResponse({'message': 'Method not allowed'})
+    except Exception as ex:
+        logging.exception(ex)
+
+
+def login(request):
+    """
+    login: login user if user is present in database or not
+    """
+    try:
+        if request.method == 'GET':
+            data = json.loads(request.body)
+            user = Registration.objects.filter(user_name=data.get('user_name'), password=data.get('password')).first()
+            if user is not None:
+                return JsonResponse({'Info': 'user logged in'})
+            return JsonResponse({'Info': 'login unsuccessful'})
+        return JsonResponse({'message': 'Method not allowed'})
+    except Exception as ex:
+        logging.exception(ex)
