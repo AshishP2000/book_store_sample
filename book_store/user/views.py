@@ -1,12 +1,16 @@
 import logging
 
+from django.conf import settings
 from django.contrib.auth import authenticate
-from django.http import JsonResponse
+from django.core.mail import send_mail
 from rest_framework import status
 from rest_framework.response import Response
+from rest_framework.reverse import reverse
 from rest_framework.views import APIView
 
+from .models import User
 from .serializers import UserSerializer
+from .token import JWT
 
 # Create your views here.
 
@@ -23,6 +27,13 @@ class UserRegister(APIView):
             serializer = UserSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
             serializer.save()
+            token = JWT().encode({'user_id': serializer.data.get('id')})
+            send_mail(
+                'book store registration',
+                settings.BASE_URL + reverse('verify', kwargs={'token': token}),
+                settings.EMAIL_HOST_USER,
+                [serializer.data.get('email')]
+            )
             return Response({'message': 'user is registered', 'status': 201, 'data': serializer.data},
                             status=status.HTTP_201_CREATED)
         except Exception as ex:
@@ -45,3 +56,16 @@ class UserLogin(APIView):
             logging.exception(ex)
             return Response({'message': str(ex)})
 
+
+class IsVerify(APIView):
+    def get(self, request, token):
+        try:
+            decode = JWT().decode(token=token)
+            user = User.objects.get(id=decode.get('user_id'))
+            if user:
+                user.is_verify = True
+                user.save()
+                return Response({'INFO': "Verified"})
+        except Exception as ex:
+            logging.exception(ex)
+            return Response({'message': str(ex)})
