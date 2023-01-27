@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/4.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
-
+from datetime import datetime, timedelta
 from pathlib import Path
 import gmail as gmail
 from django.core.mail.backends import smtp
@@ -133,3 +133,5 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = "ashish2000patil@gmail.com"
 EMAIL_HOST_PASSWORD = "rxhtkuuhbnwjtlor"
 BASE_URL = "http://127.0.0.1:8000"
+
+JWT_EXP = datetime.utcnow() + timedelta(hours=1)

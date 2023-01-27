@@ -10,7 +10,7 @@ from rest_framework.views import APIView
 
 from .models import User
 from .serializers import UserSerializer
-from .token import JWT
+from .utils import JWT
 
 # Create your views here.
 
@@ -18,6 +18,7 @@ logging.basicConfig(filename='book_store.log', level=logging.INFO)
 
 
 class UserRegister(APIView):
+
     def post(self, request):
         """
         register: getting user_name,email,password and phone from user and saving in the database
@@ -48,9 +49,12 @@ class UserLogin(APIView):
         request: data from user
         """
         try:
-            user = authenticate(username=request.data.get('username'), password=request.data.get('password'))
+            user = authenticate(email=request.data.get('email'), password=request.data.get('password'))
+            print(user)
             if user is not None:
-                return Response({'INFO': "LOGIN SUCCESSFUL", 'status': 202}, status=status.HTTP_202_ACCEPTED)
+                token = JWT().encode({'user_id': user.id})
+                return Response({'INFO': "LOGIN SUCCESSFUL", 'status': 202, 'token': token},
+                                status=status.HTTP_202_ACCEPTED)
             return Response({'INFO': "LOGIN UNSUCCESSFUL", 'status': 401}, status=status.HTTP_401_UNAUTHORIZED)
         except Exception as ex:
             logging.exception(ex)
